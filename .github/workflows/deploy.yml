@@ -21,9 +21,9 @@ jobs:
       - name: Deploy over SSH (swarm stack)
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
+          host: ${{ git@github.com:Movi2752/backups3.git }}
+          username: ${{ git@github.com:Movi2752/backups3.git }}
+          key: ${{ git@github.com:Movi2752/backups3.git }}
           script: |
             set -e
             mkdir -p ${{ secrets.REMOTE_PATH:-/opt/backup-stack }}
