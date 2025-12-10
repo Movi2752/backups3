@@ -14,9 +14,11 @@ jobs:
       - name: Read compose file
         id: readfile
         run: |
-          echo "content<<'EOF'" >> $GITHUB_OUTPUT
-          cat docker-compose.yml >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          {
+            echo "content<<EOF"
+            cat docker-compose.yml
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Deploy over SSH (swarm stack)
         uses: appleboy/ssh-action@v1.2.0
