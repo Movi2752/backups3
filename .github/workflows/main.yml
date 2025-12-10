@@ -1,34 +1,37 @@
-  name: ci-cd
+name: ci-cd
 
-  on:
-    push:
-      branches: [ "main" ]
-    workflow_dispatch: {}
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: {}
 
-  jobs:
-    deploy:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-        - name: Read compose file
-          id: readfile
-          run: |
-            echo "content<<'EOF'" >> $GITHUB_OUTPUT
-            cat docker-compose.yml >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+      - name: Read compose file
+        id: readfile
+        run: |
+          echo "content<<'EOF'" >> $GITHUB_OUTPUT
+          cat docker-compose.yml >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
-        - name: Deploy over SSH (swarm stack)
-          uses: appleboy/ssh-action@v1.2.0
-          with:
-            host: ${{ secrets.SSH_HOST }}
-            username: ${{ secrets.SSH_USER }}
-            key: ${{ secrets.SSH_KEY }}
-            script: |
-              set -e
-              mkdir -p ${{ secrets.REMOTE_PATH:-/opt/backup-stack }}
-              cd ${{ secrets.REMOTE_PATH:-/opt/backup-stack }}
-              cat > docker-compose.yml <<'EOF'
-              ${{ steps.readfile.outputs.content }}
-              EOF
-              docker stack deploy -c docker-compose.yml backup
+      - name: Deploy over SSH (swarm stack)
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+            mkdir -p ${REMOTE_PATH:-/opt/backup-stack}
+            cd ${REMOTE_PATH:-/opt/backup-stack}
+            cat > docker-compose.yml <<'EOF'
+            ${{ steps.readfile.outputs.content }}
+            EOF
+            docker stack deploy -c docker-compose.yml backup
+        env:
+          REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
+
