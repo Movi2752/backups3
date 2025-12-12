@@ -44,7 +44,7 @@ jobs:
               Clear-Content -Path $composeFile -ErrorAction SilentlyContinue
           }
 
-          # получаем контент из шага readfile (без кавычек!)
+          # получаем контент из шага readfile напрямую (без кавычек!)
           $content = ${{ steps.readfile.outputs.content }}
 
           # разбиваем на строки и записываем в файл построчно
