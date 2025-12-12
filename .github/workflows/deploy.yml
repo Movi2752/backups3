@@ -9,34 +9,38 @@ jobs:
   deploy:
     runs-on: self-hosted
 
+    defaults:
+      run:
+        shell: pwsh
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Read compose file
         id: readfile
-        shell: bash
         run: |
-          {
-            echo "content<<EOF"
-            cat docker-compose.yml
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+          $content = Get-Content "docker-compose.yml" -Raw
+          Add-Content $env:GITHUB_OUTPUT "content<<EOF"
+          Add-Content $env:GITHUB_OUTPUT $content
+          Add-Content $env:GITHUB_OUTPUT "EOF"
 
-      - name: Deploy stack locally (Windows self-hosted)
-        shell: bash
+      - name: Deploy stack (Windows PowerShell)
         run: |
-          set -e
-          echo "Updating compose file..."
+          Write-Host "Using path: $env:REMOTE_PATH"
 
-          mkdir -p "${REMOTE_PATH:-/opt/backup-stack}"
-          cd "${REMOTE_PATH:-/opt/backup-stack}"
+          if (!(Test-Path $env:REMOTE_PATH)) {
+              New-Item -ItemType Directory -Path $env:REMOTE_PATH | Out-Null
+          }
 
-          cat > docker-compose.yml <<'EOF'
+          $composeFile = Join-Path $env:REMOTE_PATH "docker-compose.yml"
+
+          "@"
           ${{ steps.readfile.outputs.content }}
-          EOF
+          "@" | Out-File -FilePath $composeFile -Encoding utf8
 
-          echo "Deploying..."
-          docker stack deploy -c docker-compose.yml backup
+          Write-Host "Deploying stack..."
+          docker stack deploy -c $composeFile backup
+
         env:
           REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
