@@ -1,4 +1,5 @@
 services:
+#Комментарий для теста
   postgres:
     image: postgres:16
     environment:
