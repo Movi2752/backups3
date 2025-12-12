@@ -20,27 +20,23 @@ jobs:
       - name: Deploy stack (Windows PowerShell)
         run: |
           Write-Host "Using path: $env:REMOTE_PATH"
-
-          # проверяем, что секрет REMOTE_PATH задан
+      
           if (-not $env:REMOTE_PATH) {
               Write-Error "REMOTE_PATH is not set. Please set the secret REMOTE_PATH in GitHub Actions."
               exit 1
           }
-
-          # создаём директорию, если её нет
+      
           if (!(Test-Path $env:REMOTE_PATH)) {
               New-Item -ItemType Directory -Path $env:REMOTE_PATH | Out-Null
           }
-
+      
           $composeFile = Join-Path $env:REMOTE_PATH "docker-compose.yml"
-
-          # копируем файл напрямую построчно
-          $lines = Get-Content "docker-compose.yml"
-          foreach ($line in $lines) {
-              Add-Content -Path $composeFile -Value $line
-          }
-
+      
+          # полностью перезаписываем файл, чтобы не было дублирования
+          Copy-Item -Path "docker-compose.yml" -Destination $composeFile -Force
+      
           Write-Host "Deploying stack..."
           docker stack deploy -c $composeFile backup
         env:
             REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
+
