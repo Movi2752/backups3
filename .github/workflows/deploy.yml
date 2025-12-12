@@ -21,6 +21,12 @@ jobs:
         run: |
           Write-Host "Using path: $env:REMOTE_PATH"
 
+          # проверяем, что секрет REMOTE_PATH задан
+          if (-not $env:REMOTE_PATH) {
+              Write-Error "REMOTE_PATH is not set. Please set the secret REMOTE_PATH in GitHub Actions."
+              exit 1
+          }
+
           # создаём директорию, если её нет
           if (!(Test-Path $env:REMOTE_PATH)) {
               New-Item -ItemType Directory -Path $env:REMOTE_PATH | Out-Null
