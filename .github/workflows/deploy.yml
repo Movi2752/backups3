@@ -1,5 +1,7 @@
 name: ci-cd
 
+#Комментарий для теста
+
 on:
   push:
     branches: [ "main" ]
@@ -11,9 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate compose
-        run: docker compose -f docker-compose.yml config
-
       - name: Read compose file
         id: readfile
         run: |
@@ -24,7 +23,6 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Deploy over SSH (swarm stack)
-        if: secrets.SSH_HOST && secrets.SSH_USER && secrets.SSH_KEY
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -40,4 +38,6 @@ jobs:
             ${{ steps.readfile.outputs.content }}
             EOF
             docker stack deploy -c docker-compose.yml backup
+        env:
+          REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
 
