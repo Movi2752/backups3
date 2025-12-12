@@ -1,7 +1,4 @@
 name: ci-cd
-
-#Комментарий для теста
-
 on:
   push:
     branches: [ "main" ]
