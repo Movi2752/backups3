@@ -11,6 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate compose
+        run: docker compose -f docker-compose.yml config
+
       - name: Read compose file
         id: readfile
         run: |
@@ -21,12 +24,13 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Deploy over SSH (swarm stack)
+        if: secrets.SSH_HOST && secrets.SSH_USER && secrets.SSH_KEY
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          port: 22           # или ваш порт
+          port: 22
           timeout: "60s"
           script: |
             set -e
@@ -36,6 +40,4 @@ jobs:
             ${{ steps.readfile.outputs.content }}
             EOF
             docker stack deploy -c docker-compose.yml backup
-        env:
-          REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
 
