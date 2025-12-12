@@ -25,22 +25,23 @@ jobs:
           Add-Content $env:GITHUB_OUTPUT $content
           Add-Content $env:GITHUB_OUTPUT "EOF"
 
-      - name: Deploy stack (Windows PowerShell)
-        run: |
-          Write-Host "Using path: $env:REMOTE_PATH"
+            - name: Deploy stack (Windows PowerShell)
+          run: |
+            Write-Host "Using path: $env:REMOTE_PATH"
+  
+            if (!(Test-Path $env:REMOTE_PATH)) {
+                New-Item -ItemType Directory -Path $env:REMOTE_PATH | Out-Null
+            }
+  
+            $composeFile = Join-Path $env:REMOTE_PATH "docker-compose.yml"
+  
+            $content = @"${{ steps.readfile.outputs.content }}"@
+  
+            Set-Content -Path $composeFile -Value $content -Encoding UTF8
+  
+            Write-Host "Deploying stack..."
+            docker stack deploy -c $composeFile backup
+  
+          env:
+            REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
 
-          if (!(Test-Path $env:REMOTE_PATH)) {
-              New-Item -ItemType Directory -Path $env:REMOTE_PATH | Out-Null
-          }
-
-          $composeFile = Join-Path $env:REMOTE_PATH "docker-compose.yml"
-
-          "@"
-          ${{ steps.readfile.outputs.content }}
-          "@" | Out-File -FilePath $composeFile -Encoding utf8
-
-          Write-Host "Deploying stack..."
-          docker stack deploy -c $composeFile backup
-
-        env:
-          REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
