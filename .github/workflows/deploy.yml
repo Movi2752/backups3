@@ -20,7 +20,10 @@ jobs:
       - name: Read compose file
         id: readfile
         run: |
+          # читаем весь docker-compose.yml как текст
           $content = Get-Content "docker-compose.yml" -Raw
+
+          # сохраняем в output для последующего шага
           Add-Content $env:GITHUB_OUTPUT "content<<EOF"
           Add-Content $env:GITHUB_OUTPUT $content
           Add-Content $env:GITHUB_OUTPUT "EOF"
@@ -29,13 +32,14 @@ jobs:
         run: |
           Write-Host "Using path: $env:REMOTE_PATH"
 
+          # создаём директорию, если её нет
           if (!(Test-Path $env:REMOTE_PATH)) {
               New-Item -ItemType Directory -Path $env:REMOTE_PATH | Out-Null
           }
 
           $composeFile = Join-Path $env:REMOTE_PATH "docker-compose.yml"
 
-          # очищаем файл
+          # очищаем файл, если существует
           if (Test-Path $composeFile) {
               Clear-Content -Path $composeFile -ErrorAction SilentlyContinue
           }
@@ -43,7 +47,7 @@ jobs:
           # получаем контент из шага readfile (без кавычек!)
           $content = ${{ steps.readfile.outputs.content }}
 
-          # разбиваем на строки и записываем в файл
+          # разбиваем на строки и записываем в файл построчно
           $lines = $content -split "`r?`n"
           foreach ($line in $lines) {
               Add-Content -Path $composeFile -Value $line
