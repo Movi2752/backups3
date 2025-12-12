@@ -24,9 +24,8 @@ jobs:
           Add-Content $env:GITHUB_OUTPUT "content<<EOF"
           Add-Content $env:GITHUB_OUTPUT $content
           Add-Content $env:GITHUB_OUTPUT "EOF"
-
-            - name: Deploy stack (Windows PowerShell)
-          run: |
+      - name: Deploy stack (Windows PowerShell)
+        run: |
             Write-Host "Using path: $env:REMOTE_PATH"
   
             if (!(Test-Path $env:REMOTE_PATH)) {
@@ -41,7 +40,6 @@ jobs:
   
             Write-Host "Deploying stack..."
             docker stack deploy -c $composeFile backup
-  
-          env:
+        env:
             REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
 
