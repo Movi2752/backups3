@@ -27,25 +27,29 @@ jobs:
       - name: Deploy stack (Windows PowerShell)
         run: |
           Write-Host "Using path: $env:REMOTE_PATH"
-
+      
           if (!(Test-Path $env:REMOTE_PATH)) {
               New-Item -ItemType Directory -Path $env:REMOTE_PATH | Out-Null
           }
-
+      
           $composeFile = Join-Path $env:REMOTE_PATH "docker-compose.yml"
-
+      
           # очищаем файл
           Clear-Content -Path $composeFile -ErrorAction SilentlyContinue
-
-          # записываем построчно (без here-string!)
-          $lines = @"${{ steps.readfile.outputs.content }}"@ -split "`r?`n"
-
+      
+          # получаем контент из шага readfile
+          $content = "${{ steps.readfile.outputs.content }}"
+      
+          # разбиваем на строки
+          $lines = $content -split "`r?`n"
+      
           foreach ($line in $lines) {
               Add-Content -Path $composeFile -Value $line
           }
-
+      
           Write-Host "Deploying stack..."
           docker stack deploy -c $composeFile backup
         env:
             REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
+
 
