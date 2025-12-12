@@ -15,30 +15,28 @@ jobs:
 
       - name: Read compose file
         id: readfile
-        shell: pwsh
+        shell: bash
         run: |
-          $content = Get-Content "docker-compose.yml" -Raw
-          Add-Content -Path $env:GITHUB_OUTPUT -Value "content<<EOF"
-          Add-Content -Path $env:GITHUB_OUTPUT -Value $content
-          Add-Content -Path $env:GITHUB_OUTPUT -Value "EOF"
+          {
+            echo "content<<EOF"
+            cat docker-compose.yml
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Deploy stack (Windows PowerShell)
-        shell: pwsh
+      - name: Deploy stack locally (Windows self-hosted)
+        shell: bash
         run: |
-          $path = "${env:REMOTE_PATH}"
+          set -e
+          echo "Updating compose file..."
 
-          if (!(Test-Path $path)) {
-            New-Item -ItemType Directory -Path $path | Out-Null
-          }
+          mkdir -p "${REMOTE_PATH:-/opt/backup-stack}"
+          cd "${REMOTE_PATH:-/opt/backup-stack}"
 
-          Set-Location $path
+          cat > docker-compose.yml <<'EOF'
+          ${{ steps.readfile.outputs.content }}
+          EOF
 
-          $compose = @"
-${{ steps.readfile.outputs.content }}
-"@
-
-          $compose | Set-Content -Path "docker-compose.yml" -Encoding UTF8
-
+          echo "Deploying..."
           docker stack deploy -c docker-compose.yml backup
         env:
           REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
