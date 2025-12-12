@@ -26,6 +26,8 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
+          port: 22           # или ваш порт
+          timeout: "60s"
           script: |
             set -e
             mkdir -p ${REMOTE_PATH:-/opt/backup-stack}
