@@ -1,42 +1,42 @@
-name: ci-cd
+# name: ci-cd
 
-on:
-  push:
-    branches: [ "main" ]
-  workflow_dispatch: {}
+# on:
+#   push:
+#     branches: [ "main" ]
+#   workflow_dispatch: {}
 
-jobs:
-  deploy:
-    runs-on: self-hosted
+# jobs:
+#   deploy:
+#     runs-on: self-hosted
 
-    defaults:
-      run:
-        shell: pwsh
+#     defaults:
+#       run:
+#         shell: pwsh
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout repo
+#         uses: actions/checkout@v4
 
-      - name: Deploy stack (Windows PowerShell)
-        run: |
-          Write-Host "Using path: $env:REMOTE_PATH"
+#       - name: Deploy stack (Windows PowerShell)
+#         run: |
+#           Write-Host "Using path: $env:REMOTE_PATH"
       
-          if (-not $env:REMOTE_PATH) {
-              Write-Error "REMOTE_PATH is not set. Please set the secret REMOTE_PATH in GitHub Actions."
-              exit 1
-          }
+#           if (-not $env:REMOTE_PATH) {
+#               Write-Error "REMOTE_PATH is not set. Please set the secret REMOTE_PATH in GitHub Actions."
+#               exit 1
+#           }
       
-          if (!(Test-Path $env:REMOTE_PATH)) {
-              New-Item -ItemType Directory -Path $env:REMOTE_PATH | Out-Null
-          }
+#           if (!(Test-Path $env:REMOTE_PATH)) {
+#               New-Item -ItemType Directory -Path $env:REMOTE_PATH | Out-Null
+#           }
       
-          $composeFile = Join-Path $env:REMOTE_PATH "docker-compose.yml"
+#           $composeFile = Join-Path $env:REMOTE_PATH "docker-compose.yml"
       
-          # полностью перезаписываем файл, чтобы не было дублирования
-          Copy-Item -Path "docker-compose.yml" -Destination $composeFile -Force
+#           # полностью перезаписываем файл, чтобы не было дублирования
+#           Copy-Item -Path "docker-compose.yml" -Destination $composeFile -Force
       
-          Write-Host "Deploying stack..."
-          docker stack deploy -c $composeFile backup
-        env:
-            REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
+#           Write-Host "Deploying stack..."
+#           docker stack deploy -c $composeFile backup
+#         env:
+#             REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
 
